@@ -53,11 +53,11 @@
       background-color: #0069d9;
     }
   </style>
-<link rel="manifest" href="manifest.json" />
+<link rel="manifest" href="/jellyfin-slideshow/manifest.webmanifest">
 <script>
   if ('serviceWorker' in navigator) {
       window.addEventListener('load', function () {
-          navigator.serviceWorker.register('service-worker.js').then(function (registration) {
+          navigator.serviceWorker.register('service-worker.js', {scope: '/jellyfin-slideshow/'}).then(function (registration) {
               console.log('ServiceWorker registration successful with scope: ', registration.scope);
           }, function (err) {
               alert('ServiceWorker registration failed: ');
