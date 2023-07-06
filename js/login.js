@@ -1,9 +1,6 @@
 if (localStorage.getItem("base-url") && localStorage.getItem("api-key")) {
     // Redirect to the main page
     window.location.href = "slideshow_swiper.html";
-}else{
-    // Redirect to the login page
-    window.location.href = "index.html";
 }
 
 
