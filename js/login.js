@@ -9,5 +9,5 @@ document.getElementById("login-form").addEventListener("submit", function(event)
     ApiConstant.apiKey = apiKey;
     
     // Redirect to the main page or perform additional actions
-    window.location.href = "slick.html";
+    window.location.href = "slidesshow_swiper.html";
   });
