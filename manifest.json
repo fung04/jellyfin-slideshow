@@ -2,7 +2,7 @@
     "name": "Jellyfin Slideshow",
     "short_name": "Jellyfin",
     "description": "A slideshow app powered by Jellyfin",
-    "start_url": "/login.html",
+    "start_url": "/",
     "display": "standalone",
     "background_color": "#000",
     "theme_color": "#000",
