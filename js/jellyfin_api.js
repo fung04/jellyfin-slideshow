@@ -22,6 +22,9 @@ class ApiClient {
     }
 
     static async _getUserId() {
+        ApiConstant.baseUrl = localStorage.getItem("base-url");
+        ApiConstant.apiKey = localStorage.getItem("api-key");
+        
         const url = new URL(`https://${ApiConstant.baseUrl}:${ApiConstant.port}/Users`);
         url.searchParams.append('api_key', ApiConstant.apiKey);
         const response = await fetch(url);

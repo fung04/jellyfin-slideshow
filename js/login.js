@@ -1,12 +1,21 @@
+if (localStorage.getItem("base-url") && localStorage.getItem("api-key")) {
+    // Redirect to the main page
+    window.location.href = "slideshow_swiper.html";
+}else{
+    // Redirect to the login page
+    window.location.href = "index.html";
+}
+
+
 document.getElementById("login-form").addEventListener("submit", function(event) {
     event.preventDefault();
     
     const baseUrl = document.getElementById("base-url").value.trim();
     const apiKey = document.getElementById("api-key").value.trim();
-  
-    // Set the values in jellyfin_api.js
-    ApiConstant.baseUrl = baseUrl;
-    ApiConstant.apiKey = apiKey;
+
+    // Save the values to local storage
+    localStorage.setItem("base-url", baseUrl);
+    localStorage.setItem("api-key", apiKey);
     
     // Redirect to the main page or perform additional actions
     window.location.href = "slideshow_swiper.html";
