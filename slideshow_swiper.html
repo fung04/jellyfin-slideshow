@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://unpkg.com/swiper/swiper-bundle.min.css" />
+    <title>Jellyfin Slideshow</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Display:wght@500&display=swap" rel="stylesheet">
+
+    <style>
+        html,
+        body,
+        .swiper-container,
+        .swiper-slide {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+
+        .swiper-container {
+            width: 100%;
+        }
+
+        .swiper-slide {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 30px;
+            background: #000;
+            position: relative;
+            /* Add this line */
+        }
+
+        .swiper-slide img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain
+        }
+
+        .swiper-slide-caption {
+            /* Add this block */
+            position: absolute;
+            bottom: 35px;
+            left: 30px;
+            color: #fff;
+            font-size: 40px;
+            background-color: rgba(0, 0, 0, 0.5);
+            padding-left: 5px;
+            padding-right: 5px;
+            padding-top: 2px;
+            padding-bottom: 2px;
+            border-radius: 10px;
+            font-family: 'Noto Sans Display', sans-serif;
+            text-align: center;
+
+        }
+
+        @media (max-width: 600px) {
+            .swiper-slide-caption {
+                font-size: 30px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="swiper-container">
+        <div class="swiper-wrapper">
+            <div class="swiper-slide">
+                <img src="https://picsum.photos/800/300?random=1" />
+                <div class="swiper-slide-caption">Preparing...</div> <!-- Add caption text here -->
+            </div>
+            <div class="swiper-slide">
+                <img src="https://picsum.photos/800/300?random=2" />
+                <div class="swiper-slide-caption">Loading...</div> <!-- Add caption text here -->
+            </div>
+        </div>
+    </div>
+        <!-- Add service worker registration -->
+        <script>
+            // if ('serviceWorker' in navigator) {
+            //     window.addEventListener('load', function () {
+            //         navigator.serviceWorker.register('js/service-worker.js').then(function (registration) {
+            //             alert('ServiceWorker registration successful with scope: ');
+            //             console.log('ServiceWorker registration successful with scope: ', registration.scope);
+            //         }, function (err) {
+            //             alert('ServiceWorker registration failed: ');
+            //             console.log('ServiceWorker registration failed: ', err);
+            //         });
+            //     });
+            // }
+        </script>
+
+
+    <script src="js/jellyfin_api.js"></script>
+    <script src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>
+    <script src="js/blurhash_pure_js_port.min.js"></script>
+    <script>
+        var swiper;
+        (async function () {
+            const videoIds = await ApiClient.getAllVideoIds();
+
+            let currentIndex = 0;
+
+            var swiper = new Swiper('.swiper-container', {
+                direction: 'horizontal',
+                effect: "fade",
+                loop: true,
+                speed: 3000,
+                autoplay: {
+                    delay: 5000, // Time between slides in milliseconds
+                    disableOnInteraction: false, // Allow user interaction to interrupt autoplay
+                },
+                on: {
+                    slideChangeTransitionEnd: async function () {
+
+
+                        if (currentIndex >= videoIds.length) {
+                            currentIndex = 0; // Reset index if end of list is reached
+                        }
+                        //console.log(currentIndex);
+                        var nextSlideIndex = 1; // 1
+
+                        const nextSlide = swiper.slides[0];
+                        const nextSlideCaption = nextSlide.querySelector('.swiper-slide-caption');
+                        const nextSlideImage = nextSlide.querySelector('img');
+
+                        var imageHash = Object.values(videoIds[currentIndex].blurhash)[0];
+                        await applyBackgroundBlurhash(imageHash);
+                        function applyBackgroundBlurhash(hash) {
+                            const width = nextSlide.offsetWidth;
+                            const height = nextSlide.offsetHeight;
+                            blurhash.decodePromise(hash, width, height).then((imgData) => {
+                                const canvas = blurhash.drawImageDataOnNewCanvas(imgData, width, height);
+                                const backgroundImageUrl = "url(" + canvas.toDataURL() + ")";
+                                nextSlide.style.backgroundImage = backgroundImageUrl;
+
+                            });
+                        }
+                        nextSlideImage.src = await ApiClient.getImageUrl(videoIds[currentIndex].id, ImageType.primary);
+                        nextSlideCaption.innerHTML = await videoIds[currentIndex].name;
+
+                        currentIndex++;
+                    },
+                },
+            });
+        })();
+    </script>
+</body>
+
+</html>
