@@ -24,17 +24,17 @@
             height: 100%;
             overflow: hidden;
         }
-
+        
         /* Container for the swiper */
         .swiper-container {
             width: 100%;
             height: 100%;
             position: relative;
         }
-
+        
         /* Individual slides */
         .swiper-slide {
-            display: flex;
+            display: flex;       
             height: 100%;
             background-color: black;
             position: relative;
@@ -84,7 +84,7 @@
         }
 
 /* Responsive styles */
-        @media (max-width: 600px) {
+@media (max-width: 600px) {
     .swiper-slide {
         flex-direction: column;
     }
@@ -96,9 +96,9 @@
         padding: 10px;
         border-radius: 30px 30px 0px 0px;
     }
-            .swiper-slide-caption {
-                font-size: 30px;
-            }
+    .swiper-slide-caption {
+        font-size: 30px;
+    }
     .info-wrapper {
         bottom: 20%;
         height: auto;
@@ -151,20 +151,20 @@
     <script src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>
     <script src="js/blurhash_pure_js_port.min.js"></script>
     <script>
-        var swiper;
+var swiper;
 
-            let currentIndex = 0;
+let currentIndex = 0;
 
-            var swiper = new Swiper('.swiper-container', {
+var swiper = new Swiper('.swiper-container', {
     init: false,
-                direction: 'horizontal',
-                effect: "fade",
-                loop: true,
-                speed: 3000,
-                autoplay: {
+    direction: 'horizontal',
+    effect: "fade",
+    loop: true,
+    speed: 3000,
+    autoplay: {
         delay: 10000, // Time between slides in milliseconds
-                    disableOnInteraction: false, // Allow user interaction to interrupt autoplay
-                },
+        disableOnInteraction: false, // Allow user interaction to interrupt autoplay
+    },
 });
 
 swiper.on('beforeInit', async function() {
@@ -195,23 +195,23 @@ swiper.on('beforeInit', async function() {
 });
 
 swiper.on('slideChangeTransitionEnd', async function() {
-                        if (currentIndex >= videoIds.length) {
-                            currentIndex = 0; // Reset index if end of list is reached
-                        }
+    if (currentIndex >= videoIds.length) {
+        currentIndex = 0; // Reset index if end of list is reached
+    }
 
     var nextSlideIndex = 1;
 
-                        const nextSlide = swiper.slides[0];
-                        const nextSlideCaption = nextSlide.querySelector('.swiper-slide-caption');
-                        const nextSlideImage = nextSlide.querySelector('img');
+    const nextSlide = swiper.slides[0];
+    const nextSlideCaption = nextSlide.querySelector('.swiper-slide-caption');
+    const nextSlideImage = nextSlide.querySelector('img');
 
-                        var imageHash = Object.values(videoIds[currentIndex].blurhash)[0];
+    var imageHash = Object.values(videoIds[currentIndex].blurhash)[0];
     await applyBackgroundBlurhash(imageHash, nextSlide);
     
     nextSlideImage.src = await ApiClient.getImageUrl(videoIds[currentIndex].id,  videoIds[currentIndex].imageType);
     nextSlideCaption.innerHTML = videoIds[currentIndex].name;
 
-                        currentIndex++;
+    currentIndex++;
 });
 
 async function applyBackgroundBlurhash(hash, imgSlide) {
