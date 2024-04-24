@@ -18,6 +18,7 @@ class ApiConstant {
 
 class ApiClient {
     static getImageUrl(videoId, imageType) {
+        // console.log(`https://${ApiConstant.baseUrl}:${ApiConstant.port}/Items/${videoId}/Images/${imageType}`)
         return `https://${ApiConstant.baseUrl}:${ApiConstant.port}/Items/${videoId}/Images/${imageType}`;
     }
 
@@ -36,45 +37,54 @@ class ApiClient {
         }
     }
 
-    static async getVideoIds({ videoType, userId }) {
+    static async getVideoIds({ videoType, imageType, userId }) {
         userId = userId || await ApiClient._getUserId();
         const url = new URL(`https://${ApiConstant.baseUrl}:${ApiConstant.port}/Users/${userId}/Items`);
         url.searchParams.append('IncludeItemTypes', videoType);
         url.searchParams.append('Recursive', 'true');
         url.searchParams.append('api_key', ApiConstant.apiKey);
+      
         const response = await fetch(url);
-        if (response.ok) {
+        if (!response.ok) {
+          throw new Error('Failed to get video ids');
+        }
+      
             const jsonData = await response.json();
-            // console.log(jsonData['Items'][1]);
-            
-            const videoIds = jsonData['Items'].map((item) => ({
-                'id': item['Id'],
-                'name': item['Name'],
-                'type': item['Type'],
-                'blurhash': item['ImageBlurHashes']['Primary'],
+
+        const hashtype = imageType === 'primary' ? 'Primary' : 'Backdrop';
+        const videoIds = jsonData['Items']
+            .filter((item) => item['ImageBlurHashes'][hashtype]) // Filter items with non-empty blurhash for the specified imageType
+            .map((item) => ({
+                id: item['Id'],
+                name: item['Name'],
+                type: item['Type'],
+                blurhash: item['ImageBlurHashes'][hashtype],
+                imageType: imageType,
             }));
             
             return videoIds;
-        } else {
-            throw new Error('Failed to get video ids');
-        }
     }
+
 
     static async getAllVideoIds() {
         const userId = await ApiClient._getUserId();
-        const list1 = await ApiClient.getVideoIds({ userId, videoType: VideoType.movie });
-        const list2 = await ApiClient.getVideoIds({ userId, videoType: VideoType.series });
-        const list3 = await ApiClient.getVideoIds({ userId, videoType: VideoType.audio });
-        const list4 = await ApiClient.getVideoIds({ userId, videoType: VideoType.episode });
+        const movie = await ApiClient.getVideoIds({ userId, imageType: ImageType.primary, videoType: VideoType.movie });
+        const series = await ApiClient.getVideoIds({ userId, imageType: ImageType.primary, videoType: VideoType.series });
+        const audio = await ApiClient.getVideoIds({ userId, imageType: ImageType.primary, videoType: VideoType.audio });
+        const movie_backdrop = await ApiClient.getVideoIds({ userId, imageType: ImageType.backdrop, videoType: VideoType.movie });
+        const series_backdrop = await ApiClient.getVideoIds({ userId, imageType: ImageType.backdrop, videoType: VideoType.series });
 
         // show all list length
-        console.log(list1.length);
-        console.log(list2.length);
-        console.log(list3.length);
-        console.log(list4.length);
+        console.log('movie', movie.length);
+        console.log('series', series.length);
+        console.log('movie_backdrop', movie_backdrop.length);
+        console.log('series_backdrop', series_backdrop.length);
+        console.log('audio', audio.length);
 
-        const combineList = [...list1, ...list2, ...list3, ...list4];
+        const combineList = [...movie, ...series, ...movie_backdrop, ...series_backdrop, ...audio];
+        console.log('combineList', combineList.length);
         combineList.sort(() => Math.random() - 0.5);
+        
         return combineList;
     }
 }
