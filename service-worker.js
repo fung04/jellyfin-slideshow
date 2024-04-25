@@ -1,4 +1,4 @@
-var GHPATH = '/jellyfin-slideshow';
+var GHPATH = '/';
 var APP_PREFIX = 'jfss_';
 var VERSION = 'version_001';
 var URLS = [    
