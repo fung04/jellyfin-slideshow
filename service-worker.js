@@ -1,14 +1,14 @@
 var GHPATH = '/';
 var APP_PREFIX = 'jfss_';
-var VERSION = 'version_001';
+var VERSION = 'version_002';
 var URLS = [    
-  `${GHPATH}/`,
-  `${GHPATH}/index.html`,
-  `${GHPATH}/js/blurhash_pure_js_port.min.js`,
-  `${GHPATH}/js/jellyfin_api.js`,
-  `${GHPATH}/js/login.js`,
-  `${GHPATH}/static/jellyfin.256x256.png`,
-  `${GHPATH}/slideshow_swiper.html`,
+  `${GHPATH}`,
+  `${GHPATH}index.html`,
+  `${GHPATH}js/blurhash_pure_js_port.min.js`,
+  `${GHPATH}js/jellyfin_api.js`,
+  `${GHPATH}js/login.js`,
+  `${GHPATH}static/jellyfin.256x256.png`,
+  `${GHPATH}slideshow_swiper.html`,
   'https://unpkg.com/swiper/swiper-bundle.min.css',
   'https://unpkg.com/swiper/swiper-bundle.min.js',
   'https://fonts.googleapis.com/css2?family=Noto+Sans+Display:wght@500&display=swap',
