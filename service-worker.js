@@ -1,6 +1,6 @@
 var GHPATH = '/';
 var APP_PREFIX = 'jfss_';
-var VERSION = 'version_002';
+var VERSION = 'version_003';
 var URLS = [    
   `${GHPATH}`,
   `${GHPATH}index.html`,
