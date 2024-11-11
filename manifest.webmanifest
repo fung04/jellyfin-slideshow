@@ -6,12 +6,15 @@
   "start_url": "/",
   "background_color": "#ffffff",
   "theme_color": "#ffffff",
-  "display": "fullscreen", 
+  "display": "standalone",
+  "display_override": ["window-controls-overlay"],
   "icons": [
       {
         "src": "/static/jellyfin.256x256.png",
         "type": "image/png",
         "sizes": "256x256"
       }
-  ]
+  ],
+  "manifest_version": 2,
+  "permissions": ["wake-lock"]
 }
