@@ -3,7 +3,10 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="stylesheet" href="https://unpkg.com/swiper/swiper-bundle.min.css" />
     <title>Jellyfin Slideshow</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -23,6 +26,11 @@
         body {
             height: 100%;
             overflow: hidden;
+        }
+        
+        body {
+            min-height: calc(100% + env(safe-area-inset-top));
+            padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
         }
         
         /* Container for the swiper */
@@ -201,6 +209,7 @@
     <script src="js/jellyfin_api.js"></script>
     <script src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>
     <script src="js/blurhash_pure_js_port.min.js"></script>
+    <script src="js/wake_lock.js"></script>
     <script>
 var swiper;
 
@@ -309,6 +318,7 @@ async function applyBackgroundBlurhash(hash, imgSlide) {
         swiper.on('init', function() {  
             const loadingSpinner = document.querySelector('.loading-spinner');
             loadingSpinner.style.display = 'block';
+            requestWakeLock();
             
             // set all image src to display: none
             const allSlide = document.querySelectorAll('.swiper-slide');
