@@ -16,6 +16,8 @@ class ApiConstant {
     static baseUrl = '';
     static port = 443;
     static apiKey = '';
+    static fieldItems = "Overview, PremiereDate, CommunityRating, RecursiveItemCount";
+
 }
 
 class ApiClient {
@@ -44,6 +46,7 @@ class ApiClient {
         const url = new URL(`https://${ApiConstant.baseUrl}:${ApiConstant.port}/Users/${userId}/Items`);
         url.searchParams.append('IncludeItemTypes', videoType);
         url.searchParams.append('Recursive', 'true');
+        url.searchParams.append('fields', ApiConstant.fieldItems);
         url.searchParams.append('api_key', ApiConstant.apiKey);
       
         const response = await fetch(url);
@@ -57,39 +60,16 @@ class ApiClient {
         if (videoType ===  VideoType.boxset|| videoType ===  VideoType.audio ) {
             const parentIds = jsonData['Items'].map(item => ({ id: item['Id'] }));
     
-            const fetchChildItems = async (parentId) => {
-                const childUrl = new URL(`https://${ApiConstant.baseUrl}:${ApiConstant.port}/Users/${userId}/Items`);
-                childUrl.searchParams.append('ParentId', parentId.id);
-                childUrl.searchParams.append('api_key', ApiConstant.apiKey);
-    
-                const childResponse = await fetch(childUrl);
-                if (!childResponse.ok) {
-                    throw new Error('Failed to get child video ids');
-                }
-    
-                const childJsonData = await childResponse.json();
-    
-                if (videoType ===  VideoType.audio) {
-                    const uniqueItems = {};
-                    childJsonData['Items'].forEach(item => {
-                        uniqueItems[item['Album']] = item;
-                    });
-                    childJsonData['Items'] = Object.values(uniqueItems);
-                }
-    
-                return childJsonData['Items']
-                    .filter(item => item['ImageTags'] && item['ImageBlurHashes'][hashtype])
-                    .map(item => ({
-                        id: item['Id'],
-                        name: videoType === VideoType.audio ? item['Album'] : item['Name'],
-                        type: item['Type'],
-                        blurhash: item['ImageBlurHashes'][hashtype],
-                        imageType: imageType,
-                    }));
-            };
-    
             // Fetch all child items concurrently
-            const childResults = await Promise.all(parentIds.map(fetchChildItems));
+            const childResults = await Promise.all(parentIds.map(parentId => 
+                ApiClient.fetchAndProcessChildItems({ 
+                    parentId, 
+                    userId, 
+                    videoType, 
+                    imageType, 
+                    hashtype,
+                    ApiConstant 
+                })));
     
             // Flatten the results
             const combinedVideoIds = childResults.flat();
@@ -102,7 +82,9 @@ class ApiClient {
             .filter(item => item['ImageTags'] && item['ImageBlurHashes'][hashtype])
             .map(item => ({
                 id: item['Id'],
-                name: item['Name'],
+                // concat the series name and and name if it's a season
+                name: videoType === VideoType.season ? item['Name'] + "\n" + item['SeriesName'] : item['Name'],
+                overview: item['Overview'] ? item['Overview'] : '',
                 type: item['Type'],
                 blurhash: item['ImageBlurHashes'][hashtype],
                 imageType: imageType,
@@ -110,6 +92,58 @@ class ApiClient {
             
             return videoIds;
     }
+
+    static async fetchAndProcessChildItems({ parentId, userId, videoType, imageType, hashtype}) {
+        const childUrl = new URL(`https://${ApiConstant.baseUrl}:${ApiConstant.port}/Users/${userId}/Items`);
+        childUrl.searchParams.append('ParentId', parentId.id);
+        childUrl.searchParams.append('api_key', ApiConstant.apiKey);
+        childUrl.searchParams.append('fields', ApiConstant.fieldItems);
+    
+        const childResponse = await fetch(childUrl);
+        if (!childResponse.ok) {
+            throw new Error('Failed to get child video ids');
+        }
+    
+        const childJsonData = await childResponse.json();
+    
+    let processedItems = [];
+
+        if (videoType === VideoType.audio) {
+            const uniqueItems = {};
+            childJsonData['Items'].forEach(item => {
+                uniqueItems[item['Album']] = item;
+            });
+            
+            processedItems = Object.values(uniqueItems)
+                .filter(item => item['ImageTags']?.["Primary"] || (item['BackdropImageTags'] && item['ImageBlurHashes'][hashtype]))
+                .map(item => ({
+                    id: (item['ImageTags']?.["Primary"] ||
+                        (item['BackdropImageTags'] && item['BackdropImageTags'].length > 0))
+                        ? item['Id']
+                        : item['AlbumId'],
+                    name: item['Album'],
+                    type: item['Type'],
+                    overview: item['Overview'] ? item['Overview'] : '',
+                    blurhash: item['ImageBlurHashes'][hashtype],
+                    imageType: imageType,
+                }));
+        } else if (videoType === VideoType.boxset) {
+            processedItems = childJsonData['Items']
+                .filter(item => item['ImageTags']?.["Primary"] || (item['BackdropImageTags'] && item['ImageBlurHashes'][hashtype]))
+                .map(item => ({
+                    id: (item['ImageTags']?.["Primary"] ||
+                        (item['BackdropImageTags'] && item['BackdropImageTags'].length > 0))
+                        ? item['Id']
+                        : item['AlbumId'],
+                    name: item['Name'],
+                    type: item['Type'],
+                    overview: item['Overview'] ? item['Overview'] : '',
+                    blurhash: item['ImageBlurHashes'][hashtype],
+                    imageType: imageType,
+                }));
+        }
+
+        return processedItems;}
 
     static async getAllVideoIds() {
         const userId = await ApiClient._getUserId();
