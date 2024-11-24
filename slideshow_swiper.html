@@ -174,13 +174,19 @@
                 <img src="" />
                 <div class="caption-wrapper">
                     <div class="swiper-slide-caption"></div>
+                    <div class="swiper-slide-overview"></div>
                 </div>
+                <img src="" loading="lazy" />
+                <div class="swiper-lazy-preloader"></div>
             </div>
             <div class="swiper-slide">
                 <img src="" />
                 <div class="caption-wrapper">
                     <div class="swiper-slide-caption"></div>
+                    <div class="swiper-slide-overview"></div>
                 </div>
+                <img src="" loading="lazy" />
+                <div class="swiper-lazy-preloader"></div>
             </div>
         </div>
         <div class="swiper-info"></div>
@@ -207,7 +213,7 @@
 
 
     <script src="js/jellyfin_api.js"></script>
-    <script src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
     <script src="js/blurhash_pure_js_port.min.js"></script>
     <script src="js/wake_lock.js"></script>
     <script>
@@ -233,13 +239,9 @@ var swiper = new Swiper('.swiper-container', {
             //     el: '.swiper-pagination',
             //     type: 'progressbar',
             // },
-            navigation: {
-                nextEl: '.swiper-button-next',
-                prevEl: '.swiper-button-prev',
-    },
 });
 
-swiper.on('beforeInit', async function() {
+        swiper.on('beforeInit', async function () {
     const videoIds = await ApiClient.getAllVideoIds();
     window.videoIds = videoIds;
 
@@ -247,6 +249,7 @@ swiper.on('beforeInit', async function() {
 
     const firstSlide = allSlide[0];
     const firstSlideCaption = firstSlide.querySelector('.swiper-slide-caption');
+            const firstSlideOverview = firstSlide.querySelector('.swiper-slide-overview');
     const firstSlideImage = firstSlide.querySelector('img');
             firstSlideImage.style.display = 'block';
     var firstImageHash = Object.values(videoIds[currentIndex].blurhash)[0];
@@ -254,6 +257,7 @@ swiper.on('beforeInit', async function() {
 
     const SecondSlide = allSlide[1];
     const SecondSlideCaption = SecondSlide.querySelector('.swiper-slide-caption');
+            const SecondSlideOverview = SecondSlide.querySelector('.swiper-slide-overview');
     const SecondSlideImage = SecondSlide.querySelector('img');
             SecondSlideImage.style.display = 'block';
     var SecondImageHash = Object.values(videoIds[currentIndex + 1].blurhash)[0];
@@ -261,9 +265,11 @@ swiper.on('beforeInit', async function() {
 
     firstSlideImage.src = await ApiClient.getImageUrl(videoIds[currentIndex].id, videoIds[currentIndex].imageType);
     firstSlideCaption.innerHTML = videoIds[currentIndex].name;
+            firstSlideOverview.innerHTML = videoIds[currentIndex].overview;
 
     SecondSlideImage.src = await ApiClient.getImageUrl(videoIds[currentIndex + 1].id, videoIds[currentIndex + 1].imageType);
     SecondSlideCaption.innerHTML = videoIds[currentIndex + 1].name;
+            SecondSlideOverview.innerHTML = videoIds[currentIndex + 1].overview;
 
             const loadingSpinner = document.querySelector('.loading-spinner');
             loadingSpinner.style.display = 'none'; 
@@ -272,7 +278,7 @@ swiper.on('beforeInit', async function() {
     currentIndex++;
 });
 
-swiper.on('slideChangeTransitionEnd', async function() {
+        swiper.on('slideChangeTransitionEnd', async function () {
             swiper.autoplay.pause();
     if (currentIndex >= videoIds.length) {
                 currentIndex = 0;
@@ -282,12 +288,14 @@ swiper.on('slideChangeTransitionEnd', async function() {
 
     const nextSlide = swiper.slides[0];
     const nextSlideCaption = nextSlide.querySelector('.swiper-slide-caption');
+            const nextSlideOverview = nextSlide.querySelector('.swiper-slide-overview');
     const nextSlideImage = nextSlide.querySelector('img');
 
     var imageHash = Object.values(videoIds[currentIndex].blurhash)[0];
     await applyBackgroundBlurhash(imageHash, nextSlide);
-    nextSlideImage.src = await ApiClient.getImageUrl(videoIds[currentIndex].id,  videoIds[currentIndex].imageType);
+            nextSlideImage.src = await ApiClient.getImageUrl(videoIds[currentIndex].id, videoIds[currentIndex].imageType);
     nextSlideCaption.innerHTML = videoIds[currentIndex].name;
+            nextSlideOverview.innerHTML = videoIds[currentIndex].overview;
             swiper.autoplay.resume();
 
     currentIndex++;
@@ -315,7 +323,7 @@ async function applyBackgroundBlurhash(hash, imgSlide) {
             }
         }
         
-        swiper.on('init', function() {  
+        swiper.on('init', function () {
             const loadingSpinner = document.querySelector('.loading-spinner');
             loadingSpinner.style.display = 'block';
             requestWakeLock();
@@ -344,7 +352,7 @@ swiper.init();
         });
 
         // Keyboard navigation
-        document.addEventListener('keydown', function(e) {
+        document.addEventListener('keydown', function (e) {
             if (e.key === 'ArrowRight') swiper.slideNext();
             if (e.key === 'ArrowLeft') swiper.slidePrev();
         });
